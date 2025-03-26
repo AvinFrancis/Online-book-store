@@ -44,6 +44,14 @@ public class BookController {
         logger.info("Book found: {}", book.getTitle());
         return new ResponseEntity<>(book, HttpStatus.OK);
     }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book updatedBook) {
+        logger.info("Updating book with ID: {}", id);
+        Book book = bookService.updateBook(id, updatedBook);
+        logger.info("Book updated successfully: {}", book.getId());
+        return new ResponseEntity<>(book, HttpStatus.OK);
+    }
 
 
     @DeleteMapping("/{id}")
