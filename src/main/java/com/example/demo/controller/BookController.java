@@ -2,10 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Book;
 import com.example.demo.service.BookService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,51 +13,40 @@ import java.util.List;
 @RequestMapping("/books")
 public class BookController {
 
-    private static final Logger logger = LoggerFactory.getLogger(BookController.class);
     private final BookService bookService;
 
     public BookController(BookService bookService) {
         this.bookService = bookService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
-        logger.info("Request to add a book: {}", book.getTitle());
-        Book createdBook = bookService.addBook(book);
-        logger.info("Book added successfully: {}", createdBook.getId());
-        return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
+        return new ResponseEntity<>(bookService.addBook(book), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
-        logger.info("Fetching all books");
-        List<Book> books = bookService.getAllBooks();
-        logger.info("Retrieved {} books", books.size());
-        return new ResponseEntity<>(books, HttpStatus.OK);
+        return new ResponseEntity<>(bookService.getAllBooks(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-        logger.info("Fetching book with ID: {}", id);
-        Book book = bookService.getBookById(id);
-        logger.info("Book found: {}", book.getTitle());
-        return new ResponseEntity<>(book, HttpStatus.OK);
+        return new ResponseEntity<>(bookService.getBookById(id), HttpStatus.OK);
     }
-    
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book updatedBook) {
-        logger.info("Updating book with ID: {}", id);
-        Book book = bookService.updateBook(id, updatedBook);
-        logger.info("Book updated successfully: {}", book.getId());
-        return new ResponseEntity<>(book, HttpStatus.OK);
+        return new ResponseEntity<>(bookService.updateBook(id, updatedBook), HttpStatus.OK);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBook(@PathVariable Long id) {
-        logger.warn("Request to delete book with ID: {}", id);
         bookService.deleteBook(id);
-        logger.warn("Book deleted: {}", id);
         return new ResponseEntity<>("Book deleted successfully.", HttpStatus.OK);
     }
 }
